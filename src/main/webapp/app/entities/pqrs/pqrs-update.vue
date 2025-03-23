@@ -117,31 +117,17 @@
           </div>
         </div>
         <div>
-          <!--  <div>
-    <input type="file" @change="onFileChange" multiple />
-
-
-    <ul>
-      <li v-for="(file, index) in files" :key="index">
-        {{ file.name }}
-        <button @click="removeFile(index)">Eliminar</button>
-      </li>
-    </ul>
-  </div>
--->
-          <div>
-            <!-- Input para seleccionar archivos (ocultamos el texto del nombre del archivo) -->
+          <div class="file-upload">
             <input type="file" @change="onFileChange" multiple ref="fileInput" style="display: none" />
-            <button @click="triggerFileInput">Subir Archivo</button>
-            <!-- Botón personalizado para abrir el diálogo de selección de archivos -->
-
-            <!-- Lista de archivos seleccionados -->
-            <ul>
-              <li v-for="(file, index) in files" :key="index">
+            <button class="btn btn-primary" @click="triggerFileInput">
+              <font-awesome-icon icon="upload"></font-awesome-icon>&nbsp;Subir Archivos
+            </button>
+            <ul class="list-group mt-2">
+              <li v-for="(file, index) in files" :key="index" class="list-group-item d-flex justify-content-between align-items-center">
                 {{ file.name }}
-                <!-- Mostrar el nombre del archivo -->
-                <button @click="removeFile(index)">Eliminar</button>
-                <!-- Botón para eliminar -->
+                <button class="btn btn-danger btn-sm" @click="removeFile(index)">
+                  <font-awesome-icon icon="trash"></font-awesome-icon>&nbsp;Eliminar
+                </button>
               </li>
             </ul>
           </div>
@@ -164,3 +150,19 @@
   </div>
 </template>
 <script lang="ts" src="./pqrs-update.component.ts"></script>
+<style scoped>
+.file-upload {
+  margin-top: 20px;
+}
+
+.file-upload .btn-primary {
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.file-upload .list-group-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+</style>
