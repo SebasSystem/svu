@@ -197,34 +197,44 @@ public class ArchivoAdjuntoService {
         }
     }
 
-    public String saveFile(MultipartFile file) {
+    public ArchivoAdjuntoDTO saveFile(MultipartFile file) {
+        // 1. Guardar archivo físicamente (tu código existente)
         Path rootLocation = Path.of("/home/adrian/Adr/svufiles");
         if (!Files.exists(rootLocation)) {
             try {
-                Files.createDirectories(rootLocation); // Crear el directorio si no existe
+                Files.createDirectories(rootLocation);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("No se pudo crear el directorio", e);
             }
         }
+        // 2. Crear y guardar la entidad
         String fileName = file.getOriginalFilename();
         Path destinationPath = rootLocation.resolve(fileName);
-        // Guardar el archivo
         try {
             file.transferTo(destinationPath);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error al guardar el archivo", e);
         }
-        // Crear la URL o ruta para almacenar en la base de datos
-        String urlArchivo = "uploads/" + fileName;
-
-        // Crear la instancia de ArchivoAdjunto
+        // 3. Crear entidad con todos los campos
         ArchivoAdjunto archivoAdjunto = new ArchivoAdjunto()
             .nombre(fileName)
             .tipo(file.getContentType())
-            .urlArchivo(urlArchivo)
+            .urlArchivo("uploads/" + fileName)
             .fechaSubida(Instant.now());
-
+        // 4. Guardar en MongoDB y retornar el objeto completo
+        ArchivoAdjuntoDTO archivoAdjuntoDTO = convertToDto(archivoAdjunto);
         archivoAdjunto = archivoAdjuntoRepository.save(archivoAdjunto);
-        return archivoAdjunto.getId();
+        archivoAdjuntoDTO = archivoAdjuntoMapper.toDto(archivoAdjunto);
+        return archivoAdjuntoDTO;
+    }
+
+    private ArchivoAdjuntoDTO convertToDto(ArchivoAdjunto archivo) {
+        ArchivoAdjuntoDTO dto = new ArchivoAdjuntoDTO();
+        dto.setId(archivo.getId());
+        dto.setNombre(archivo.getNombre());
+        dto.setTipo(archivo.getTipo());
+        dto.setUrlArchivo(archivo.getUrlArchivo());
+        dto.setFechaSubida(archivo.getFechaSubida());
+        return dto;
     }
 }
