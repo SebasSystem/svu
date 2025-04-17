@@ -43,6 +43,16 @@ public class PqrsDTO implements Serializable {
         this.archivosAdjuntosDTO = archivosAdjuntos;
     }
 
+    private String submitterFullName;
+
+    private String submitterEmail;
+
+    private String submitterPhoneNumber;
+
+    private Boolean isAnonymous;
+
+    private UserDTO user;
+
     public String getId() {
         return id;
     }
@@ -99,6 +109,46 @@ public class PqrsDTO implements Serializable {
         this.oficinaResponder = oficinaResponder;
     }
 
+    public String getSubmitterFullName() {
+        return submitterFullName;
+    }
+
+    public void setSubmitterFullName(String submitterFullName) {
+        this.submitterFullName = submitterFullName;
+    }
+
+    public String getSubmitterEmail() {
+        return submitterEmail;
+    }
+
+    public void setSubmitterEmail(String submitterEmail) {
+        this.submitterEmail = submitterEmail;
+    }
+
+    public String getSubmitterPhoneNumber() {
+        return submitterPhoneNumber;
+    }
+
+    public void setSubmitterPhoneNumber(String submitterPhoneNumber) {
+        this.submitterPhoneNumber = submitterPhoneNumber;
+    }
+
+    public Boolean getIsAnonymous() {
+        return isAnonymous;
+    }
+
+    public void setIsAnonymous(Boolean isAnonymous) {
+        this.isAnonymous = isAnonymous;
+    }
+
+    public UserDTO getUser() {
+        return user;
+    }
+
+    public void setUser(UserDTO user) {
+        this.user = user;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -124,13 +174,18 @@ public class PqrsDTO implements Serializable {
     @Override
     public String toString() {
         return "PqrsDTO{" +
-            "id='" + getId() + "'" +
-            ", titulo='" + getTitulo() + "'" +
-            ", descripcion='" + getDescripcion() + "'" +
-            ", fechaCreacion='" + getFechaCreacion() + "'" +
-            ", fechaLimiteRespuesta='" + getFechaLimiteRespuesta() + "'" +
-            ", estado='" + getEstado() + "'" +
+            "id='" + getId() + '\'' +
+            ", titulo='" + getTitulo() + '\'' +
+            ", descripcion='" + getDescripcion() + '\'' +
+            ", fechaCreacion='" + getFechaCreacion() + '\'' +
+            ", fechaLimiteRespuesta='" + getFechaLimiteRespuesta() + '\'' +
+            ", estado='" + getEstado() + '\'' +
             ", oficinaResponder=" + getOficinaResponder() +
-            "}";
+            ", submitterFullName='" + getSubmitterFullName() + '\'' +
+            ", submitterEmail='" + getSubmitterEmail() + '\'' +
+            ", submitterPhoneNumber='" + getSubmitterPhoneNumber() + '\'' +
+            ", isAnonymous=" + getIsAnonymous() +
+            ", user=" + getUser() +
+            '}';
     }
 }

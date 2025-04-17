@@ -37,7 +37,6 @@ public class Pqrs implements Serializable {
     @Field("fecha_limite_respuesta")
     private Instant fechaLimiteRespuesta;
 
-    @NotNull
     @Field("estado")
     private String estado;
 
@@ -50,6 +49,25 @@ public class Pqrs implements Serializable {
     @Field("oficinaResponder")
     @JsonIgnoreProperties(value = { "notificacions" }, allowSetters = true)
     private Oficina oficinaResponder;
+
+    // Campos para PQRS creada por usuario anónimo
+    @Field("submitter_full_name")
+    private String submitterFullName;
+
+    @Field("submitter_email")
+    private String submitterEmail;
+
+    @Field("submitter_phone_number")
+    private String submitterPhoneNumber;
+
+    @Field("is_anonymous")
+    private Boolean isAnonymous;
+
+    // 🔐 Usuario autenticado (si aplica)
+    @DBRef
+    @Field("user")
+    @JsonIgnoreProperties(value = { "authorities" }, allowSetters = true)
+    private User user;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -167,6 +185,46 @@ public class Pqrs implements Serializable {
     public Pqrs oficinaResponder(Oficina oficina) {
         this.setOficinaResponder(oficina);
         return this;
+    }
+
+    public String getSubmitterFullName() {
+        return submitterFullName;
+    }
+
+    public void setSubmitterFullName(String submitterFullName) {
+        this.submitterFullName = submitterFullName;
+    }
+
+    public String getSubmitterEmail() {
+        return submitterEmail;
+    }
+
+    public void setSubmitterEmail(String submitterEmail) {
+        this.submitterEmail = submitterEmail;
+    }
+
+    public String getSubmitterPhoneNumber() {
+        return submitterPhoneNumber;
+    }
+
+    public void setSubmitterPhoneNumber(String submitterPhoneNumber) {
+        this.submitterPhoneNumber = submitterPhoneNumber;
+    }
+
+    public Boolean getAnonymous() {
+        return isAnonymous;
+    }
+
+    public void setAnonymous(Boolean anonymous) {
+        isAnonymous = anonymous;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

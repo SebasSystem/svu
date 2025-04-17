@@ -22,7 +22,8 @@ public interface PqrsMapper extends EntityMapper<PqrsDTO, Pqrs> {
     OficinaDTO toDtoOficinaId(Oficina oficina);
 }
 */
-@Mapper(componentModel = "spring")
+//@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = { OficinaMapper.class, UserMapper.class })
 public interface PqrsMapper extends EntityMapper<PqrsDTO, Pqrs> {
     @Mapping(target = "archivosAdjuntosDTO", source = "archivosAdjuntos")
     PqrsDTO toDto(Pqrs pqrs);
