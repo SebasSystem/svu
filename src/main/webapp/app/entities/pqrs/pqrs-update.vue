@@ -83,7 +83,7 @@
             </div>
           </div>
           <!--  -->
-          <div class="form-group">
+          <div class="form-group" v-if="isAuthenticated">
             <label class="form-control-label" v-text="t$('ventanillaUnicaApp.pqrs.estado')" for="pqrs-estado"></label>
             <input
               type="text"
@@ -96,9 +96,12 @@
               required
             />
             <div v-if="v$.estado.$anyDirty && v$.estado.$invalid">
-              <small class="form-text text-danger" v-for="error of v$.estado.$errors" :key="error.$uid">{{ error.$message }}</small>
+              <small class="form-text text-danger" v-for="error of v$.estado.$errors" :key="error.$uid">
+                {{ error.$message }}
+              </small>
             </div>
           </div>
+
           <div class="form-group">
             <label class="form-control-label" v-text="t$('ventanillaUnicaApp.pqrs.oficinaResponder')" for="pqrs-oficinaResponder"></label>
             <select
@@ -119,24 +122,26 @@
           </div>
         </div>
         <div>
-          <div>
-            <!-- Input para seleccionar archivos (ocultamos el texto del nombre del archivo) -->
-
+          <div class="form-group">
+            <!-- Input oculto para seleccionar archivos -->
             <input type="file" ref="fileInput" @change="onFileChange" multiple style="display: none" />
 
-            <!-- Botón para subir archivos -->
-            <button type="button" @click="triggerFileInput" :disabled="isUploading">
-              {{ isUploading ? 'Subiendo...' : 'Seleccionar archivos' }}
+            <!-- Botón para abrir el selector de archivos -->
+            <button type="button" class="btn btn-primary mb-3" @click="triggerFileInput" :disabled="isUploading">
+              <span v-if="isUploading">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Subiendo...
+              </span>
+              <span v-else> <i class="fas fa-upload mr-1"></i> Seleccionar archivos </span>
             </button>
-            <!-- Botón personalizado para abrir el diálogo de selección de archivos -->
 
             <!-- Lista de archivos seleccionados -->
-            <ul>
-              <li v-for="(file, index) in files" :key="index">
+            <ul class="list-group">
+              <li v-for="(file, index) in files" :key="index" class="list-group-item d-flex justify-content-between align-items-center">
                 {{ file.name }}
-                <!-- Mostrar el nombre del archivo -->
-                <button @click="removeFile(index)">Eliminar</button>
-                <!-- Botón para eliminar -->
+                <button type="button" class="btn btn-sm btn-danger" @click="removeFile(index)">
+                  <i class="fas fa-trash-alt"></i> Eliminar
+                </button>
               </li>
             </ul>
           </div>

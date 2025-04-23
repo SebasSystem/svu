@@ -10,6 +10,8 @@ const OficinaDetails = () => import('@/entities/oficina/oficina-details.vue');
 const Pqrs = () => import('@/entities/pqrs/pqrs.vue');
 const PqrsUpdate = () => import('@/entities/pqrs/pqrs-update.vue');
 const PqrsDetails = () => import('@/entities/pqrs/pqrs-details.vue');
+const PqrsConsult = () => import('@/entities/pqrs/pqrs-consult.vue');
+//const PqrsFormalitiesCreate = () => import('@/entities/pqrs/pqrs-formalities-create.vue');
 
 const Respuesta = () => import('@/entities/respuesta/respuesta.vue');
 const RespuestaUpdate = () => import('@/entities/respuesta/respuesta-update.vue');
@@ -67,7 +69,7 @@ export default {
       path: 'pqrs/new',
       name: 'PqrsCreate',
       component: PqrsUpdate,
-      meta: { authorities: [Authority.USER] },
+      //meta: { authorities: [Authority.USER] },
     },
     {
       path: 'pqrs/:pqrsId/edit',
@@ -81,6 +83,18 @@ export default {
       component: PqrsDetails,
       meta: { authorities: [Authority.USER] },
     },
+    {
+      path: 'pqrs/consult',
+      name: 'PqrsConsult',
+      component: PqrsConsult,
+      //meta: { authorities: [Authority.USER] },
+    },
+    /*  {
+      path: 'pqrs/formalities/create',
+      name: 'PqrsFormalitiesCreate',
+      component: PqrsFormalitiesCreate,
+      //meta: { authorities: [Authority.USER] },
+    },*/
     {
       path: 'respuesta',
       name: 'Respuesta',

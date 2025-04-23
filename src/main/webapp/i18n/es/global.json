@@ -15,6 +15,15 @@
         "notificacion": "Notificacion",
         "informePqrs": "Informe Pqrs"
       },
+      "formalities": {
+        "name": "Trámites",
+        "items": {
+          "pqrs": {
+            "consult": "Consultar PQRS",
+            "create": "Crear PQRS"
+          }
+        }
+      },
       "account": {
         "main": "Cuenta",
         "settings": "Ajustes",

@@ -3,9 +3,12 @@ package co.edu.itp.svu.service;
 import co.edu.itp.svu.domain.ArchivoAdjunto;
 import co.edu.itp.svu.domain.Oficina;
 import co.edu.itp.svu.domain.Pqrs;
+import co.edu.itp.svu.domain.User;
 import co.edu.itp.svu.repository.ArchivoAdjuntoRepository;
 import co.edu.itp.svu.repository.OficinaRepository;
 import co.edu.itp.svu.repository.PqrsRepository;
+import co.edu.itp.svu.repository.UserRepository;
+import co.edu.itp.svu.security.SecurityUtils;
 import co.edu.itp.svu.service.dto.ArchivoAdjuntoDTO;
 import co.edu.itp.svu.service.dto.OficinaDTO;
 import co.edu.itp.svu.service.dto.PqrsDTO;
@@ -16,6 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -41,6 +45,9 @@ public class PqrsService {
     private OficinaMapper oficinaMapper;
 
     private final MongoTemplate mongoTemplate; // Para operaciones más avanzadas
+
+    @Autowired
+    private UserRepository userRepository;
 
     public PqrsService(
         PqrsRepository pqrsRepository,
@@ -165,7 +172,17 @@ public class PqrsService {
         // 1. Convertir la PQRS principal
         Pqrs pqrs = pqrsMapper.toEntity(pqrsDTO);
 
-        // 2. Procesar archivos adjuntos (convertir DTOs a entidades)
+        // 2. Si el usuario NO está autenticado, ignorar el estado
+        Optional<String> currentUserLogin = SecurityUtils.getCurrentUserLogin();
+        if (currentUserLogin.isPresent()) {
+            Optional<User> user = userRepository.findOneByLogin(currentUserLogin.get());
+            user.ifPresent(pqrs::setUser); // <- AQUÍ se asigna el usuario a la PQRS
+        } else {
+            pqrs.setUser(null);
+            pqrs.setEstado("Por validar"); // Usuario anónimo: setear estado por defecto
+        }
+
+        // 3. Procesar archivos adjuntos (convertir DTOs a entidades)
         if (pqrsDTO.getArchivosAdjuntosDTO() != null) {
             Set<ArchivoAdjunto> archivosAdjuntos = pqrsDTO
                 .getArchivosAdjuntosDTO()
@@ -176,10 +193,10 @@ public class PqrsService {
             pqrs.setArchivosAdjuntos(archivosAdjuntos);
         }
 
-        // 3. Guardar todo (incluye archivos adjuntos)
+        // 4. Guardar todo (incluye archivos adjuntos)
         pqrs = pqrsRepository.save(pqrs);
 
-        // 4. Retornar DTO con todos los datos
+        // 5. Retornar DTO con todos los datos
         return pqrsMapper.toDto(pqrs);
     }
 

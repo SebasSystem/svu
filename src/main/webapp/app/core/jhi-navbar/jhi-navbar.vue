@@ -24,6 +24,29 @@
             <span v-text="t$('global.menu.home')"></span>
           </span>
         </b-nav-item>
+        <b-nav-item-dropdown
+          right
+          id="pqrs-menu"
+          active-class="active"
+          class="pointer"
+          :class="{ 'router-link-active': subIsActive('/pqrs/formalities') }"
+        >
+          <template #button-content>
+            <span class="navbar-dropdown-menu">
+              <font-awesome-icon icon="envelope-open-text" />
+              <span class="no-bold" v-text="t$('global.menu.formalities.name')"></span>
+            </span>
+          </template>
+          <b-dropdown-item to="/pqrs/consult" active-class="active">
+            <font-awesome-icon icon="search" />
+            <span class="no-bold" v-text="t$('global.menu.formalities.items.pqrs.consult')"></span>
+          </b-dropdown-item>
+          <b-dropdown-item to="/pqrs/new" active-class="active">
+            <font-awesome-icon icon="plus" />
+            <span class="no-bold" v-text="t$('global.menu.formalities.items.pqrs.create')"></span>
+          </b-dropdown-item>
+        </b-nav-item-dropdown>
+
         <b-nav-item-dropdown right id="entity-menu" v-if="authenticated" active-class="active" class="pointer" data-cy="entity">
           <template #button-content>
             <span class="navbar-dropdown-menu">

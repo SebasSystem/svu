@@ -39,6 +39,7 @@ import { faUserPlus } from '@fortawesome/free-solid-svg-icons/faUserPlus';
 import { faUsers } from '@fortawesome/free-solid-svg-icons/faUsers';
 import { faUsersCog } from '@fortawesome/free-solid-svg-icons/faUsersCog';
 import { faWrench } from '@fortawesome/free-solid-svg-icons/faWrench';
+import { faEnvelopeOpenText } from '@fortawesome/free-solid-svg-icons/faEnvelopeOpenText';
 
 const datetimeFormats: IntlDateTimeFormats = {
   es: {
@@ -135,6 +136,7 @@ export function initFortAwesome(vue) {
     faUsers,
     faUsersCog,
     faWrench,
+    faEnvelopeOpenText,
   );
 }
 export function initI18N(opts: any = {}) {
