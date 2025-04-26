@@ -1,137 +1,123 @@
-import { type Ref, defineComponent, inject, onMounted, ref, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
-
-import InformePqrsService from './informe-pqrs.service';
-import { type IInformePqrs } from '@/shared/model/informe-pqrs.model';
-import { useDateFormat } from '@/shared/composables';
-import { useAlertService } from '@/shared/alert/alert.service';
+import { defineComponent, ref, watch } from 'vue';
+import PqrsService from '@/entities/pqrs/pqrs.service';
+import { Pqrs } from '@/shared/model/pqrs.model';
 
 export default defineComponent({
-  compatConfig: { MODE: 3 },
   name: 'InformePqrs',
+
   setup() {
-    const { t: t$ } = useI18n();
-    const dateFormat = useDateFormat();
-    const informePqrsService = inject('informePqrsService', () => new InformePqrsService());
-    const alertService = inject('alertService', () => useAlertService(), true);
-
-    const itemsPerPage = ref(20);
-    const queryCount: Ref<number> = ref(null);
-    const page: Ref<number> = ref(1);
-    const propOrder = ref('id');
-    const reverse = ref(false);
-    const totalItems = ref(0);
-
-    const informePqrs: Ref<IInformePqrs[]> = ref([]);
-
-    const isFetching = ref(false);
-
-    const clear = () => {
-      page.value = 1;
-    };
-
-    const sort = (): Array<any> => {
-      const result = [`${propOrder.value},${reverse.value ? 'desc' : 'asc'}`];
-      if (propOrder.value !== 'id') {
-        result.push('id');
-      }
-      return result;
-    };
-
-    const retrieveInformePqrss = async () => {
-      isFetching.value = true;
-      try {
-        const paginationQuery = {
-          page: page.value - 1,
-          size: itemsPerPage.value,
-          sort: sort(),
-        };
-        const res = await informePqrsService().retrieve(paginationQuery);
-        totalItems.value = Number(res.headers['x-total-count']);
-        queryCount.value = totalItems.value;
-        informePqrs.value = res.data;
-      } catch (err) {
-        alertService.showHttpError(err.response);
-      } finally {
-        isFetching.value = false;
-      }
-    };
-
-    const handleSyncList = () => {
-      retrieveInformePqrss();
-    };
-
-    onMounted(async () => {
-      await retrieveInformePqrss();
+    // Estado reactivo
+    const filtroId = ref<number | null>(null);
+    const fechaInicio = ref<string | null>(null);
+    const fechaFin = ref<string | null>(null);
+    const tipoInforme = ref<'general' | 'detallado' | 'resumen'>('general');
+    const resultados = ref<Pqrs[]>([]);
+    const loading = ref(false);
+    const informeGenerado = ref(false);
+    const conteo = ref({
+      recibidos: 0,
+      enProceso: 0,
+      respondidos: 0,
     });
 
-    const removeId: Ref<string> = ref(null);
-    const removeEntity = ref<any>(null);
-    const prepareRemove = (instance: IInformePqrs) => {
-      removeId.value = instance.id;
-      removeEntity.value.show();
+    // Servicio
+    const pqrsService = new PqrsService();
+
+    // Watchers
+    watch(tipoInforme, () => {
+      informeGenerado.value = false;
+    });
+
+    // Métodos
+    const porcentaje = (cantidad: number): string => {
+      const total = conteo.value.recibidos + conteo.value.enProceso + conteo.value.respondidos;
+      return total ? ((cantidad / total) * 100).toFixed(2) : '0.00';
     };
-    const closeDialog = () => {
-      removeEntity.value.hide();
+
+    const formatDate = (dateString: string): string => {
+      if (!dateString) return '--';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
     };
-    const removeInformePqrs = async () => {
+
+    const getEstadoBadgeClass = (estado: string): string => {
+      switch (estado) {
+        case 'Recibido':
+          return 'info';
+        case 'En Proceso':
+          return 'warning';
+        case 'Respondido':
+          return 'success';
+        default:
+          return 'secondary';
+      }
+    };
+
+    const consultarInforme = async (): Promise<void> => {
+      loading.value = true;
+      resultados.value = [];
+      conteo.value = { recibidos: 0, enProceso: 0, respondidos: 0 };
+
       try {
-        await informePqrsService().delete(removeId.value);
-        const message = t$('ventanillaUnicaApp.informePqrs.deleted', { param: removeId.value }).toString();
-        alertService.showInfo(message, { variant: 'danger' });
-        removeId.value = null;
-        retrieveInformePqrss();
-        closeDialog();
+        const response = await pqrsService.retrieve();
+        let lista: Pqrs[] = response.data;
+
+        if (fechaInicio.value && fechaFin.value) {
+          lista = lista.filter(item => {
+            const fecha = new Date(item.fechaCreacion);
+            return fecha >= new Date(fechaInicio.value!) && fecha <= new Date(fechaFin.value!);
+          });
+        }
+
+        switch (tipoInforme.value) {
+          case 'general':
+            conteo.value.recibidos = lista.filter(p => p.estado === 'Recibido').length;
+            conteo.value.enProceso = lista.filter(p => p.estado === 'En Proceso').length;
+            conteo.value.respondidos = lista.filter(p => p.estado === 'Respondido').length;
+            resultados.value = lista;
+            break;
+          case 'detallado':
+            resultados.value = lista;
+            break;
+          case 'resumen':
+            conteo.value.recibidos = lista.length;
+            break;
+        }
+
+        informeGenerado.value = true;
       } catch (error) {
-        alertService.showHttpError(error.response);
+        console.error('Error al obtener PQRS:', error);
+      } finally {
+        loading.value = false;
       }
     };
 
-    const changeOrder = (newOrder: string) => {
-      if (propOrder.value === newOrder) {
-        reverse.value = !reverse.value;
-      } else {
-        reverse.value = false;
-      }
-      propOrder.value = newOrder;
+    const generarInforme = (): void => {
+      console.log('Generando informe...', resultados.value);
+      // Lógica para generar informe
     };
-
-    // Whenever order changes, reset the pagination
-    watch([propOrder, reverse], async () => {
-      if (page.value === 1) {
-        // first page, retrieve new data
-        await retrieveInformePqrss();
-      } else {
-        // reset the pagination
-        clear();
-      }
-    });
-
-    // Whenever page changes, switch to the new page.
-    watch(page, async () => {
-      await retrieveInformePqrss();
-    });
 
     return {
-      informePqrs,
-      handleSyncList,
-      isFetching,
-      retrieveInformePqrss,
-      clear,
-      ...dateFormat,
-      removeId,
-      removeEntity,
-      prepareRemove,
-      closeDialog,
-      removeInformePqrs,
-      itemsPerPage,
-      queryCount,
-      page,
-      propOrder,
-      reverse,
-      totalItems,
-      changeOrder,
-      t$,
+      // Estado
+      filtroId,
+      fechaInicio,
+      fechaFin,
+      tipoInforme,
+      resultados,
+      loading,
+      conteo,
+      informeGenerado,
+
+      // Métodos
+      consultarInforme,
+      porcentaje,
+      formatDate,
+      getEstadoBadgeClass,
+      generarInforme,
     };
   },
 });

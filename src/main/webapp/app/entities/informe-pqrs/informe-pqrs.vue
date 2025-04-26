@@ -1,145 +1,142 @@
 <template>
-  <div>
-    <h2 id="page-heading" data-cy="InformePqrsHeading">
-      <span v-text="t$('ventanillaUnicaApp.informePqrs.home.title')" id="informe-pqrs-heading"></span>
-      <div class="d-flex justify-content-end">
-        <button class="btn btn-info mr-2" @click="handleSyncList" :disabled="isFetching">
-          <font-awesome-icon icon="sync" :spin="isFetching"></font-awesome-icon>
-          <span v-text="t$('ventanillaUnicaApp.informePqrs.home.refreshListLabel')"></span>
+  <div class="container mt-4">
+    <h2>Informe de PQRS</h2>
+
+    <!-- Filtros -->
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <label>Fecha desde</label>
+        <input type="date" class="form-control" v-model="fechaInicio" />
+      </div>
+
+      <div class="col-md-3">
+        <label>Fecha hasta</label>
+        <input type="date" class="form-control" v-model="fechaFin" />
+      </div>
+
+      <div class="col-md-3">
+        <label>Tipo de Informe</label>
+        <select class="form-control" v-model="tipoInforme">
+          <option value="general">General</option>
+          <option value="detallado">Detallado</option>
+          <option value="resumen">Resumen</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Botón Consultar -->
+    <div class="row mb-3">
+      <div class="col-md-3 d-flex align-items-end">
+        <button class="btn btn-primary w-100" @click="consultarInforme" :disabled="loading">
+          <span v-if="loading" class="spinner-border spinner-border-sm"></span>
+          {{ loading ? 'Consultando...' : 'Consultar' }}
         </button>
-        <router-link :to="{ name: 'InformePqrsCreate' }" custom v-slot="{ navigate }">
-          <button
-            @click="navigate"
-            id="jh-create-entity"
-            data-cy="entityCreateButton"
-            class="btn btn-primary jh-create-entity create-informe-pqrs"
-          >
-            <font-awesome-icon icon="plus"></font-awesome-icon>
-            <span v-text="t$('ventanillaUnicaApp.informePqrs.home.createLabel')"></span>
-          </button>
-        </router-link>
       </div>
-    </h2>
-    <br />
-    <div class="alert alert-warning" v-if="!isFetching && informePqrs && informePqrs.length === 0">
-      <span v-text="t$('ventanillaUnicaApp.informePqrs.home.notFound')"></span>
     </div>
-    <div class="table-responsive" v-if="informePqrs && informePqrs.length > 0">
-      <table class="table table-striped" aria-describedby="informePqrs">
-        <thead>
-          <tr>
-            <th scope="row" @click="changeOrder('id')">
-              <span v-text="t$('global.field.id')"></span>
-              <jhi-sort-indicator :current-order="propOrder" :reverse="reverse" :field-name="'id'"></jhi-sort-indicator>
-            </th>
-            <th scope="row" @click="changeOrder('fechaInicio')">
-              <span v-text="t$('ventanillaUnicaApp.informePqrs.fechaInicio')"></span>
-              <jhi-sort-indicator :current-order="propOrder" :reverse="reverse" :field-name="'fechaInicio'"></jhi-sort-indicator>
-            </th>
-            <th scope="row" @click="changeOrder('fechaFin')">
-              <span v-text="t$('ventanillaUnicaApp.informePqrs.fechaFin')"></span>
-              <jhi-sort-indicator :current-order="propOrder" :reverse="reverse" :field-name="'fechaFin'"></jhi-sort-indicator>
-            </th>
-            <th scope="row" @click="changeOrder('totalPqrs')">
-              <span v-text="t$('ventanillaUnicaApp.informePqrs.totalPqrs')"></span>
-              <jhi-sort-indicator :current-order="propOrder" :reverse="reverse" :field-name="'totalPqrs'"></jhi-sort-indicator>
-            </th>
-            <th scope="row" @click="changeOrder('totalResueltas')">
-              <span v-text="t$('ventanillaUnicaApp.informePqrs.totalResueltas')"></span>
-              <jhi-sort-indicator :current-order="propOrder" :reverse="reverse" :field-name="'totalResueltas'"></jhi-sort-indicator>
-            </th>
-            <th scope="row" @click="changeOrder('totalPendientes')">
-              <span v-text="t$('ventanillaUnicaApp.informePqrs.totalPendientes')"></span>
-              <jhi-sort-indicator :current-order="propOrder" :reverse="reverse" :field-name="'totalPendientes'"></jhi-sort-indicator>
-            </th>
-            <th scope="row" @click="changeOrder('oficina.id')">
-              <span v-text="t$('ventanillaUnicaApp.informePqrs.oficina')"></span>
-              <jhi-sort-indicator :current-order="propOrder" :reverse="reverse" :field-name="'oficina.id'"></jhi-sort-indicator>
-            </th>
-            <th scope="row"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="informePqrs in informePqrs" :key="informePqrs.id" data-cy="entityTable">
-            <td>
-              <router-link :to="{ name: 'InformePqrsView', params: { informePqrsId: informePqrs.id } }">{{ informePqrs.id }}</router-link>
-            </td>
-            <td>{{ formatDateShort(informePqrs.fechaInicio) || '' }}</td>
-            <td>{{ formatDateShort(informePqrs.fechaFin) || '' }}</td>
-            <td>{{ informePqrs.totalPqrs }}</td>
-            <td>{{ informePqrs.totalResueltas }}</td>
-            <td>{{ informePqrs.totalPendientes }}</td>
-            <td>
-              <div v-if="informePqrs.oficina">
-                <router-link :to="{ name: 'OficinaView', params: { oficinaId: informePqrs.oficina.id } }">{{
-                  informePqrs.oficina.id
-                }}</router-link>
-              </div>
-            </td>
-            <td class="text-right">
-              <div class="btn-group">
-                <router-link :to="{ name: 'InformePqrsView', params: { informePqrsId: informePqrs.id } }" custom v-slot="{ navigate }">
-                  <button @click="navigate" class="btn btn-info btn-sm details" data-cy="entityDetailsButton">
-                    <font-awesome-icon icon="eye"></font-awesome-icon>
-                    <span class="d-none d-md-inline" v-text="t$('entity.action.view')"></span>
-                  </button>
-                </router-link>
-                <router-link :to="{ name: 'InformePqrsEdit', params: { informePqrsId: informePqrs.id } }" custom v-slot="{ navigate }">
-                  <button @click="navigate" class="btn btn-primary btn-sm edit" data-cy="entityEditButton">
-                    <font-awesome-icon icon="pencil-alt"></font-awesome-icon>
-                    <span class="d-none d-md-inline" v-text="t$('entity.action.edit')"></span>
-                  </button>
-                </router-link>
-                <b-button
-                  @click="prepareRemove(informePqrs)"
-                  variant="danger"
-                  class="btn btn-sm"
-                  data-cy="entityDeleteButton"
-                  v-b-modal.removeEntity
-                >
-                  <font-awesome-icon icon="times"></font-awesome-icon>
-                  <span class="d-none d-md-inline" v-text="t$('entity.action.delete')"></span>
-                </b-button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <b-modal ref="removeEntity" id="removeEntity">
-      <template #modal-title>
-        <span
-          id="ventanillaUnicaApp.informePqrs.delete.question"
-          data-cy="informePqrsDeleteDialogHeading"
-          v-text="t$('entity.delete.title')"
-        ></span>
-      </template>
-      <div class="modal-body">
-        <p id="jhi-delete-informePqrs-heading" v-text="t$('ventanillaUnicaApp.informePqrs.delete.question', { id: removeId })"></p>
+
+    <!-- Resultados -->
+    <div v-if="informeGenerado">
+      <!-- General -->
+      <div v-if="!loading && tipoInforme === 'general'">
+        <h4>Resultados (General)</h4>
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Estado</th>
+              <th>Cantidad</th>
+              <th>Porcentaje</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Recibidos</td>
+              <td>{{ conteo.recibidos }}</td>
+              <td>{{ porcentaje(conteo.recibidos) }}%</td>
+            </tr>
+            <tr>
+              <td>En proceso</td>
+              <td>{{ conteo.enProceso }}</td>
+              <td>{{ porcentaje(conteo.enProceso) }}%</td>
+            </tr>
+            <tr>
+              <td>Respondidos</td>
+              <td>{{ conteo.respondidos }}</td>
+              <td>{{ porcentaje(conteo.respondidos) }}%</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <template #modal-footer>
-        <div>
-          <button type="button" class="btn btn-secondary" v-text="t$('entity.action.cancel')" @click="closeDialog()"></button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            id="jhi-confirm-delete-informePqrs"
-            data-cy="entityConfirmDeleteButton"
-            v-text="t$('entity.action.delete')"
-            @click="removeInformePqrs()"
-          ></button>
+
+      <!-- Detallado -->
+      <div v-if="!loading && tipoInforme === 'detallado'">
+        <h4>Resultados Detallados</h4>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover">
+            <thead class="table-dark">
+              <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Asunto</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="pqrs in resultados" :key="pqrs.id">
+                <td>{{ pqrs.id }}</td>
+                <td>{{ formatDate(pqrs.fechaCreacion) }}</td>
+                <td>
+                  <span :class="`badge bg-${getEstadoBadgeClass(pqrs.estado)}`">
+                    {{ pqrs.estado }}
+                  </span>
+                </td>
+                <td>{{ pqrs.asunto }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </template>
-    </b-modal>
-    <div v-show="informePqrs && informePqrs.length > 0">
-      <div class="row justify-content-center">
-        <jhi-item-count :page="page" :total="queryCount" :itemsPerPage="itemsPerPage"></jhi-item-count>
       </div>
-      <div class="row justify-content-center">
-        <b-pagination size="md" :total-rows="totalItems" v-model="page" :per-page="itemsPerPage"></b-pagination>
+
+      <!-- Resumen -->
+      <div v-if="!loading && tipoInforme === 'resumen'" class="alert alert-info">
+        <h4>Resumen</h4>
+        <p>
+          Total de PQRS encontrados: <strong>{{ conteo.recibidos }}</strong>
+        </p>
+      </div>
+
+      <!-- Sin resultados -->
+      <div v-if="!loading && resultados.length === 0" class="alert alert-warning">
+        No se encontraron resultados con los filtros aplicados.
+      </div>
+
+      <!-- Botón Generar PDF -->
+      <div class="row mt-4" v-if="informeGenerado && resultados.length > 0">
+        <div class="col-md-3">
+          <button class="btn btn-success w-100" @click="generarInforme"><i class="bi bi-file-earmark-pdf"></i> Generar PDF</button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts" src="./informe-pqrs.component.ts"></script>
+<script lang="ts">
+import InformePqrs from './informe-pqrs.component';
+export default InformePqrs;
+</script>
+
+<style scoped>
+.table {
+  margin-top: 20px;
+}
+.table-responsive {
+  max-height: 500px;
+  overflow-y: auto;
+}
+.spinner-border {
+  margin-right: 8px;
+}
+.badge {
+  font-size: 0.9em;
+  padding: 5px 10px;
+}
+</style>
